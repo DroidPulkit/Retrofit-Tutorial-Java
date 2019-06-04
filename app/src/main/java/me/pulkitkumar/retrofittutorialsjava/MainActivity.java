@@ -46,26 +46,7 @@ public class MainActivity extends AppCompatActivity {
      */
     void useRetrofit(){
 
-        //This is to setup the base url on which we are calling the api
-        String API_BASE_URL = "https://api.github.com/";
-
-        //Making an OkHttpClient Builder which opens up the socket to the URL above
-        OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
-
-        //Making the builder for the url and adding a converter
-        // through which we can map the JSON response we get from API to Java object
-        // We are using GSON, right now for that.
-        Retrofit.Builder builder = new Retrofit.Builder()
-                .baseUrl(API_BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create());
-
-        //Finally adding OkHttpClient and Retrofit together
-        Retrofit retrofit = builder.client(httpClient.build()).build();
-
-        //This is used to initialize the interface,
-        // which is later used to call the functions,
-        // we created to call the endpoints
-        GitHubClient client = retrofit.create(GitHubClient.class);
+        GitHubClient client = ServiceGenerator.createService(GitHubClient.class);
 
         // Fetch a list of the Github repositories.
         Call<List<GitHubRepo>> call = client.repoForUsers("droidpulkit");
@@ -79,13 +60,14 @@ public class MainActivity extends AppCompatActivity {
                 //The network call is successful
 
                 List<GitHubRepo> gitHubRepoList = response.body();
+                if (gitHubRepoList != null && gitHubRepoList.size() > 0) {
+                    githubListingAdapter = new GithubListingAdapter(getApplicationContext(), gitHubRepoList);
+                    gitHubListing.setAdapter(githubListingAdapter);
+                    githubListingAdapter.notifyDataSetChanged();
 
-                githubListingAdapter = new GithubListingAdapter(getApplicationContext(), gitHubRepoList);
-                gitHubListing.setAdapter(githubListingAdapter);
-                githubListingAdapter.notifyDataSetChanged();
-
-                for (GitHubRepo repo : response.body()){
-                    Log.d(TAG, "Repo ID: " + repo.getId() + " Repo Name: " + repo.getName());
+                    for (GitHubRepo repo : gitHubRepoList) {
+                        Log.d(TAG, "Repo ID: " + repo.getId() + " Repo Name: " + repo.getName());
+                    }
                 }
 
 
