@@ -1,6 +1,8 @@
 package me.pulkitkumar.retrofittutorialsjava;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -18,10 +20,19 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getName();
 
+    RecyclerView gitHubListing;
+    GithubListingAdapter githubListingAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        gitHubListing = findViewById(R.id.rv_github_listing);
+        gitHubListing.setLayoutManager(new LinearLayoutManager(this));
+        githubListingAdapter = new GithubListingAdapter(this);
+        gitHubListing.setAdapter(githubListingAdapter);
+
         doSomething();
     }
 
@@ -44,9 +55,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<List<GitHubRepo>> call, Response<List<GitHubRepo>> response) {
 
+                List<GitHubRepo> gitHubRepoList = response.body();
+
+                githubListingAdapter = new GithubListingAdapter(getApplicationContext(), gitHubRepoList);
+                gitHubListing.setAdapter(githubListingAdapter);
+                githubListingAdapter.notifyDataSetChanged();
+
                 for (GitHubRepo repo : response.body()){
                     Log.d(TAG, "Repo ID: " + repo.getId() + " Repo Name: " + repo.getName());
                 }
+
+
             }
 
             @Override
